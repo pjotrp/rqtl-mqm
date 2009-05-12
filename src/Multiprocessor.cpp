@@ -1,17 +1,42 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <fstream>
+#include <iostream>
 #include <time.h>
 #include <math.h>
 #include <omp.h>
 #include <string>
-
-#define MAXCOMMANDLENGTH   1000
+#include "Multiprocessor.h"
 
 using namespace std; 
+
+#define MAXCOMMANDLENGTH   1000
 
 void ourerror(char *s){
 	printf("\n** Error: %s **\n",s); 
 	exit(-1); 
+}
+
+typedef double*  vector;
+typedef double** matrix;
+
+matrix newmatrix(int rows, int cols){
+    matrix m;
+    m = (double **)malloc(cols * rows * sizeof(double));
+    if (m==NULL) { 
+        printf("Not enough memory for new double matrix");
+    }
+    for (int i=0; i<rows; i++){
+		m[i]= newvector(cols);
+	}
+    return m;
+}
+
+vector newvector(int dim)
+{      vector v;
+       v = (double *)malloc(dim*sizeof(double));
+       if (v==NULL) { 
+         printf("Not enough memory for new vector of dimension %d",(dim+1)); 
+       }
+       return v;
 }
 
 int threader(int num,int batchsize,int thread_id,char *command,int verbose){
@@ -27,13 +52,61 @@ int threader(int num,int batchsize,int thread_id,char *command,int verbose){
 	return e;
 }
 
-int setup_mqm_multi(){
-	char *genofile = "geno.dat";
-	char *phenofile = "pheno.dat";
-	char *mposfile = "markerpos.txt";
-	char *chrfile = "chrid.dat";
-	char *setfile = "settings.dat";
+int setup_mqm_multi(int ntraits){
+	for(int x=0;x<ntraits;x++){
+		create_dir(x);
+		copy_files(x);
+		copy_trait(x,ntraits);
+	}
 	return 1;
+}
+
+int count_lines(char *file){
+	//NUM: number of elements on 1 line
+	int cnt=0;
+	char line[100];
+	ifstream file_stream(file, ios::in);
+	while (!file_stream.eof()){
+        file_stream >> line;
+		cnt++;
+	}
+	file_stream.close();
+	return cnt;
+}
+
+int copy_trait(int num,int num_traits){
+		char *chrfile = "chrid.dat";
+		char *phenofile = "pheno.dat";
+		char newloc [100];
+		int nInd=count_lines(phenofile);
+		int nMark=count_lines(chrfile);
+		matrix phenotypes= newmatrix(nInd,nMark);
+		int cnt=0;
+		int cInd=0;
+
+		printf("# of individuals: %d\n",nInd);
+		printf("# of markers: %d\n",nMark);
+		ifstream pheno(phenofile, ios::in);
+		while (!pheno.eof()){
+			if(cnt < num_traits){
+          		pheno >> phenotypes[cnt][cInd];
+				//printf("%d,%d,%f\n",cnt,cInd,phenotypes[cnt][cInd]);
+				cnt++;
+			}else{
+				cnt = 0;
+				cInd++;
+			}	
+		}
+		pheno.close();
+		sprintf(newloc,"MQMrun%d/%s",num,phenofile);
+		printf(newloc,"\n");
+		ofstream outputfile(newloc, ios::out | ios::app);
+		for(int x=0; x<nInd;x++){
+			//printf("%d,%d,%f\n",x,num,phenotypes[num][x]);
+			outputfile << phenotypes[num][x] << endl;
+		}
+		outputfile.close();
+		return 1;
 }
 
 int setup_mqm_permutation(int methode){
@@ -50,9 +123,17 @@ int setup_mqm_permutation(int methode){
 	return 1;
 }
 
+
 int create_dir(int runnumber){
-	char *command;
+	char command [100];
 	sprintf(command,"mkdir MQMrun%d",runnumber);
+	system(command);
+	return 1;
+}
+
+int delete_dir(int runnumber){
+	char command [100];
+	sprintf(command,"rm MQMrun%d -R",runnumber);
 	system(command);
 	return 1;
 }
@@ -62,8 +143,9 @@ int copy_files(int runnumber){
 	char *mposfile = "markerpos.txt";
 	char *chrfile = "chrid.dat";
 	char *setfile = "settings.dat";
-	char *command;
+	char command [100];
 	sprintf(command,"cp %s MQMrun%d/%s",genofile,runnumber,genofile);
+	printf("%s\n",command);
 	system(command);
 	sprintf(command,"cp %s MQMrun%d/%s",mposfile,runnumber,mposfile);
 	system(command);
@@ -119,6 +201,7 @@ int main(int argc, char *argv[]){
 	if(command[0]=='N'){
 		ourerror("Please supply a command");
 	}
+	setup_mqm_multi(1);
 	printf("Requesting %d threads\n", nthreads);
 	printf("Batchsize = %d\n", nbatch);
 	printf("itemstodo = %d\n", itemstodo);

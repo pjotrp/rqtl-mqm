@@ -23,7 +23,7 @@
  *
  **********************************************************************/
  
-//#define ALONE
+#define ALONE
 
 #ifdef ALONE
        #undef Rprintf

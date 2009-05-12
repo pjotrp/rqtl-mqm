@@ -254,7 +254,7 @@ int count_lines(char *file){
 
 
 int main(){
-
+    Rprintf("MQM standalone version\n");
 	char *genofile = "geno.dat";
 	char *phenofile = "pheno.dat";
 	char *mposfile = "markerpos.txt";

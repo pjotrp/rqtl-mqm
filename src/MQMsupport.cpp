@@ -25,9 +25,10 @@
  * Contains: 
  *
  **********************************************************************/
-using namespace std;
 #include <fstream>
 #include <iostream>
+
+using namespace std;
 
 extern "C"
 {

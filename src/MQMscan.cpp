@@ -23,10 +23,10 @@
  * Contains: R_scanMQM, scanMQM
  *
  **********************************************************************/
-using namespace std;
-
 #include <fstream>
 #include <iostream>
+
+using namespace std;
 
 extern "C"
 {
@@ -42,7 +42,7 @@ extern "C"
 #include "MQMinterfaces.h"   /*Testing */
 #include "MQMreDefine.h"
 
-#include "util.h"
+#include "MQMutil.h"
 double absdouble(double x)
 {
 //{      double z; z= (x<0 ? -x : x); return z;}
@@ -230,7 +230,7 @@ void R_scanMQM(int *Nind,int *Nmark,int *Npheno,
    reorg_int(*Nmark,1,chromo,&Chromo);   
    reorg_pheno(*Nmark,1,dist,&Dist);
    //Here we have  the assumption that step.min is negative this needs to be split in 2
-   reorg_pheno(2*(*chromo) * (((*stepma)-(*stepmi))/ (*steps)),1,qtl,&QTL);
+   reorg_pheno((int)(2*(*chromo) * (((*stepma)-(*stepmi))/ (*steps))),1,qtl,&QTL);
    reorg_pheno(*Nind,*Npheno,pheno,&Pheno);
    reorg_int(*Nmark,1,cofactors,&Cofactors);  
    reorg_int(*out_Naug,1,indlist,&INDlist);  
@@ -265,6 +265,8 @@ int main(){
 	ivector chr;
 	cvector cofactor;
 	vector mapdistance;
+	vector pos;
+	vector pheno_value;
 	cmatrix markers;
 	ivector INDlist;
     int stepmin = 0;
@@ -273,8 +275,8 @@ int main(){
 
 	int cnt=0;
 	int cInd=0; //Current individual
-	int nInd;
-	int nMark;
+	int nInd=0;
+	int nMark=0;
 	int backwards=0;
 	
 	nInd=count_lines(phenofile);
@@ -285,10 +287,10 @@ int main(){
 	cofactor= newcvector(nMark);  
 	mapdistance= newvector(nMark);
 	markers= newcmatrix(nMark,nInd);
-	double pheno_value[nInd];
+	pheno_value = newvector(nInd);
 	chr = newivector(nMark);
 	INDlist= newivector(nInd);
-	double pos[nMark];
+	pos = newvector(nMark);
 
 	char peek_c;
 
@@ -317,7 +319,7 @@ int main(){
 	ifstream mpos(mposfile, ios::in);
 	while (!mpos.eof()){
 		peek_c=mpos.peek();
-    	if(peek_c=='\t' or peek_c == ' '){
+    	if(peek_c=='\t' || peek_c == ' '){
            	mpos >> pos[cnt];
           //  Rprintf("%f\n",pos[cnt]);
             cnt++;

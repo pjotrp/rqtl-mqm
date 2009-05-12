@@ -38,7 +38,7 @@ extern "C"
 #include "MQMprob.h"
 #include "MQMreDefine.h"
 
-#include "util.h"
+#include "MQMutil.h"
 
 
   char determin_cross(int *Nmark,int *Nind,int **Geno,int *crosstype) {

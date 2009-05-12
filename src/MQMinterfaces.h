@@ -26,4 +26,4 @@
 void R_Lnorm(double *a,double* b);
 
 /* end of MQMinterfaces.h */
- 
+

@@ -57,11 +57,16 @@ snowCoreBOOT <- function(x,all_data,Funktie,method,verbose=FALSE,...){
 	if(!method){
 		neworder <- sample(nind(all_data))			
 		all_data$pheno[[1]] <- all_data$pheno[[1]][neworder]
+<<<<<<< HEAD:R/MQMsnow.R
 	}else{	
+=======
+	}else{
+		//parametric permutation
+>>>>>>> e5be62a... Changed parametric permutation:R/MQMsnow.R
 		pheno <- all_data$pheno[[1]]
 		variance <- var(pheno,na.rm = TRUE)
 		for(j in 1:nind(all_data)) {
-			all_data$pheno[[1]][j] <- runif(1)*(variance^0.5)
+			all_data$pheno[[1]][j] <- rnorm(1)*(variance^0.5)
 		}
 	}
 	if("cofactors" %in% names(formals(Funktie))){

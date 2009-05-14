@@ -55,6 +55,9 @@ void analyseF2(int Nind, int Nmark, cvector *cofactor, cmatrix marker, vector y,
 			   double stepmin,double stepmax,double alfa,int em,int out_Naug,int **INDlist,char reestimate,char crosstype,char dominance,int verbose)
 {    
     if(verbose){Rprintf("INFO: Starting C-part of the MQM analysis\n");}
+    for (int i=0; i<Nind; i++){
+        //Rprintf("%d %f\n",i,y[i]);   
+    }
 	int Naug;
 	int run=0;
     cvector position;

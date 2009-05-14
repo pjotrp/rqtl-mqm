@@ -1,0 +1,12 @@
+use Dev CPP to compile sMQM:
+- Install R
+- Add to Library Directory:		C:\Program Files\R\R-2.8.1\bin
+- Add to Include Directories:		C:\Program Files\R\R-2.8.1\include
+- Add the following switch to the linker -lR
+
+Use visual studio to compile mpiMQM:
+- install visual studio
+- Create new project
+- Add mpiMQM.cpp to the project
+- Compiler options: /openmp
+- Compile

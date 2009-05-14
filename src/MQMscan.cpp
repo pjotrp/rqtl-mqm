@@ -152,15 +152,18 @@ int main(int argc,char *argv[]){
 	int nMark=0;
 	int backwards=0;
 	int nPheno=0;
-	if(verbose){Rprintf("INFO: Loading settings from file\n");}
+	int windowsize=0;
 	cnt = 0;
 	char *name;
 	int maxIter;
-	double windowsize,alpha;
-	
+	double alpha;
+    nMark=count_lines(chrfile);
+	char peek_c;
+
+	if(verbose){Rprintf("INFO: Loading settings from file\n");}
 	ifstream setstr(setfile, ios::in);
     setstr >> nInd;
-	if(verbose){Rprintf("nPheno: %d\n",nInd);}
+	if(verbose){Rprintf("nInd: %d\n",nInd);}
     setstr >> nPheno;
 	if(verbose){Rprintf("nPheno: %d\n",nPheno);}
     setstr >> stepmin;
@@ -175,7 +178,14 @@ int main(int argc,char *argv[]){
 	if(verbose){Rprintf("A: %f\n",alpha);}
 	setstr >> maxIter;
 	if(verbose){Rprintf("Miter: %d\n",maxIter);}
-
+    f1genotype = newivector(nMark);	
+	cofactor= newcvector(nMark);  
+	mapdistance= newvector(nMark);
+	markers= newcmatrix(nMark,nInd);
+	pheno_value = newmatrix(nPheno,nInd);
+	chr = newivector(nMark);
+	INDlist= newivector(nInd);
+	pos = newvector(nMark);
     int sum = 0;
     for(int i=0; i< nMark; i++){
       setstr >> cofactor[i];
@@ -185,25 +195,16 @@ int main(int argc,char *argv[]){
     }
     
     if(sum > 0){
+	if(verbose){Rprintf("# Starting backward elimination of %d cofactors\n",sum);}
     backwards = 1;       
     }else{
     backwards = 0;       
     }
     setstr.close();		
 	if(verbose){Rprintf("# of individuals: %d\n",nInd);}
-	nMark=count_lines(chrfile);
 	if(verbose){Rprintf("# of markers: %d\n",nMark);}
-    f1genotype = newivector(nMark);	
-	cofactor= newcvector(nMark);  
-	mapdistance= newvector(nMark);
-	markers= newcmatrix(nMark,nInd);
-	pheno_value = newmatrix(nPheno,nInd);
-	chr = newivector(nMark);
-	INDlist= newivector(nInd);
-	pos = newvector(nMark);
-
-	char peek_c;
-
+    cnt=0;
+	cInd = 0;    
 	ifstream geno(genofile, ios::in);
 	while (!geno.eof()){
         if(cnt < nMark){

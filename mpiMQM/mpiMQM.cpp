@@ -21,7 +21,7 @@ int threader(int num,int batchsize,int start,int stop,int thread_id,char *comman
 	
 	for(int i=start; i<stop; i++){
         sprintf(MQMcommand,"%s -T=%d",command,i);
-       // printf("%s\n",MQMcommand);
+        printf("%s\n",MQMcommand);
 		e = system(MQMcommand);
 		if(e !=1){
 			e = i;
@@ -49,7 +49,7 @@ int main(int argc, char *argv[]){
 	printf("C++ Multiprocessor for sMQM V0.1 (c) Danny Arends\n");
 	for (int i=1; i<argc; i++) {
 	if (!strcmp(argv[i],argv[0])) continue;
-	if (argv[i][0] != '-') ourerror("dash needed at argument");
+	if (argv[i][0] != '-') ourerror("Dash needed at argument, argument structure for booleans: -V or for strings/numbers -C=<command>\n");
 
 	c = toupper(argv[i][1]);
 
@@ -59,7 +59,7 @@ int main(int argc, char *argv[]){
 
 	// -argum=value
 	if (argv[i][2]!='='){
-		ourerror("equal symbol needed at argument");
+		ourerror("Equal symbol needed at argument, argument structure for booleans: -V or for strings/numbers -C=<command>");
 	}
 
 	switch(c)
@@ -72,7 +72,7 @@ int main(int argc, char *argv[]){
 	}
 	}
 	if(command[0]=='N'){
-		ourerror("Please supply a command");
+		ourerror("Please supply a command using the -C=<command> switch");
 	}
 	printf("Requesting %d threads\n", nthreads);
 	printf("Batchsize = %d\n", nbatch);
@@ -83,14 +83,17 @@ int main(int argc, char *argv[]){
 	printf("# runs = %d\n", nroftodos);
 	lcores = ((itemstodo % (nbatch*nthreads))/nbatch);
 	printf("# threads in last run = %d\n", lcores);
-	//error lbatch=itemsgonnado-
-	lbatch = itemstodo-(itemspbatch*(nroftodos-1)+(lcores-1)*nbatch);
+	if(lcores > 0 ){
+		lbatch = itemstodo-(itemspbatch*(nroftodos-1)+(lcores-1)*nbatch);
+	}else{
+		lbatch = itemstodo-(itemspbatch*(nroftodos-1));
+	}
 	printf("# items in last run = %d\n", lbatch);
 	printf("Command = %s\n", command);
 	omp_set_num_threads(nthreads);
 	for (int x=0;x<nroftodos;x++){
-	if(x==(nroftodos-1) && lcores != 0){
-		nthreads=lcores;
+	if(x==(nroftodos-1) && lbatch != 0){
+		nthreads=(lcores+1);
 		if(verbose){printf("l-cores set\n");}
 	}
 	#pragma omp parallel shared(n,command)
@@ -98,7 +101,7 @@ int main(int argc, char *argv[]){
 	thread_id = omp_get_thread_num();
 	#pragma omp for
 		for (int i=0; i<nthreads; i++){
-			if(i==(lcores-1) && x==(nroftodos-1)){
+			if(lbatch > 0 && x==(nroftodos-1)){
 				nbatch=lbatch;
 				if(verbose){printf("l-batch set\n");}
 			}

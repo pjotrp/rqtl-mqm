@@ -239,4 +239,31 @@ void R_scanMQM(int *Nind,int *Nmark,int *Npheno,
    scanMQM(*Nind,*Nmark,*Npheno,Geno,Chromo,Dist,Pheno,Cofactors,*backwards,*RMLorML,*alfa,*emiter,*windowsize,*steps,*stepmi,*stepma,*nRun,*out_Naug,INDlist,QTL, *reestimate,*crosstype,*domi,*verbose);
 } /* end of function R_scanMQM */
 
+
+/* Test interface  intended to only calls mapQTL with 1 trait using precalculated data */
+void R_testScan(int *num_ind, int *num_markers, int *num_genotypes,double *trait,double *markerdistances,int *geno,double *probabilitymatrix, double *markerrf, *cof,int *stepsize,int *windowsize){
+   int **Geno;
+   int **Cof;
+   double **Rfs;
+   double ***Prob;
+   double **Dist;  
+   double **Pheno;
+   char *Positions;
+   
+   reorg_geno(*num_ind,*num_markers,geno,&Geno);
+   reorg_geno(*num_markers,1,cof,&Cof);
+   reorg_geno(*num_markers,1,cof,&Cofs);
+   reorg_pheno(*num_markers,*num_markers,markerrf,&Rfs);
+   reorg_pheno(*num_markers,1,markerdistances,&Dist);
+   reorg_pheno(*num_ind,1,trait,&Pheno);
+   /*Dont forget: Cof -> Cofs & Positions == empty*/
+   mqm(*num_ind,*num_markers,*num_genotypes,Pheno,Dist,Positions,Geno,Prob,Rfs,Cof,Cofs,*stepsize,*windowsize,"Y","N","1")
+}
+
+double mqm(int Nind, int Nmark, int nGeno, vector y, cvector mapdistance, vector mappositions, matrix Geno, double ***Prob  
+			  vector r, cvector cofactor, cvector selcofactor, double windowsize,double stepsize,char fitQTL,char dominance,char REMLorML){      
+
+}
+
+
 }

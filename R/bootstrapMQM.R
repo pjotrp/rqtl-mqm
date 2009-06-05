@@ -3,7 +3,7 @@
 # bootstrapMQM.R
 #
 # copyright (c) 2009, Danny Arends
-# last modified Mrt, 2009
+# last modified Jun, 2009
 # first written Feb, 2009
 #
 #     This program is free software; you can redistribute it and/or
@@ -22,14 +22,51 @@
 # Contains: bootstrap - Main function for bootstrap analysis
 #           MQMpermObject - Helperfunction to create permObjects (R/QTL format)
 #           bootstrapmqm, bootstrapcim
+#           FDRpermutation
 #
 ######################################################################
 
-######################################################################
-#
-# bootstrap: Shuffles phenotype or does parametric bootstrapping of scanMQM
-#
-######################################################################
+FDRpermutation <- function(cross=NULL, Funktie=scanall, thresholds=c(1,2,3,4,5,7,10,15,20), n.perm = 10, verbose=TRUE, ...){
+	if(verbose){cat("Calculation of FDR estimate of threshold in multitrait analysis.\n")}
+	results <- NULL
+	above_in_real_res <- NULL
+	res <- Funktie(cross,...)
+	for(threshold in thresholds){
+		above_in_real <- 0
+		for(x in 1:nphe(cross)){
+			above_in_real = above_in_real + sum(res[[x]][,3] > threshold)
+		}
+		above_in_real_res <- c(above_in_real_res,above_in_real)
+	}
+	perm <- cross
+	if(verbose){cat("QTL's above threshold:",above_in_real,"\n")}
+	above_in_perm_res <- rep(0,length(thresholds))
+	for(x in 1:n.perm){
+		if(verbose){cat("Starting permutation",x,"\n")}
+		perm_res <- NULL
+		
+		neworder <- sample(nind(cross))
+		for(chr in 1:nchr(cross)){
+			perm$geno[[1]]$data <- perm$geno[[1]]$data[neworder,]
+		}
+		res <- Funktie(perm,...)
+		for(threshold in thresholds){
+			above_in_perm <- 0
+			for(y in 1:nphe(cross)){
+				above_in_perm = above_in_perm + sum(res[[y]][,3] > threshold)
+			}
+			perm_res <- c(perm_res,above_in_perm)
+			#if(verbose){cat("Permutation",x,"QTL's above threshold:",above_in_perm,"\n")}
+		}
+		above_in_perm_res <- above_in_perm_res+perm_res
+	}
+	above_in_perm_res <- above_in_perm_res/n.perm
+	results <- cbind(above_in_real_res,above_in_perm_res,above_in_perm_res/above_in_real_res)
+	rownames(results) <- thresholds
+	results
+}
+
+
 
 bootstrapmqm <- function(...){
 	bootstrap(...,Funktie=mqm)
@@ -38,6 +75,12 @@ bootstrapmqm <- function(...){
 bootstrapcim <- function(...){
 	bootstrap(...,Funktie=cim)
 }
+
+######################################################################
+#
+# bootstrap: Shuffles phenotype or does parametric bootstrapping of scanMQM
+#
+######################################################################
 
 bootstrap <- function(cross= NULL,Funktie=scanone,pheno.col=1,multiC=TRUE,n.run=10,b_size=10,file="MQM_output.txt",n.clusters=2,method=0,plot=FALSE,verbose=FALSE,...)
 {

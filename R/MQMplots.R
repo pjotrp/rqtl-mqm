@@ -4,7 +4,7 @@
 #
 # copyright polyplot (c) 2009, Rutger Brouwer
 # copyright other functions (c) 2009, Danny Arends
-# last modified Mrt, 2009
+# last modified Jun, 2009
 # first written Feb, 2009
 #
 #     This program is free software; you can redistribute it and/or
@@ -22,8 +22,131 @@
 # Part of the R/qtl package
 # Contains: Different plotting functions belonging to the MQM subpackage of R/QTL
 #           polyplot, plotMQMall, plotMQMboot, plotMQMnice, plotMQMone
-#
+#           CisTransPlot, addloctocross 
 ######################################################################
+
+CisTransPlot <- function(x,cross,threshold=5,onlyPEAK=TRUE,highPEAK=FALSE,cisarea=10,pch=22,cex=0.5, ...){
+	if(is.null(cross$locations)){
+		stop("Please add trait locations to the cross file\n")
+	}
+	locations <- NULL
+	if(any(class(x) == "MQMmulti")){
+		sum_map <- 0
+		chr_breaks <- NULL
+		for(j in 1:nchr(cross)){
+			l_chr <- max(x[[1]][x[[1]][,1]==j,2])
+			chr_breaks <- c(chr_breaks,sum_map)
+			sum_map <- sum_map+l_chr
+		}
+		sum_map <- ceiling(sum_map)
+		cat("Total maplength:",sum_map," cM in ",nchr(cross),"Chromosomes\nThe lengths are:",chr_breaks,"\n")		
+		for( k in 1:length(x) ) {
+			loc <- cross$locations[[k]]
+			rownames(loc) <- k
+			locations <- rbind(locations,loc)
+		}
+		QTLs <- NULL
+		for(y in 1:nrow(locations)){
+			qtl <- x[[y]][,3]
+			QTLs <- rbind(QTLs,qtl)
+		}
+		colnames(QTLs) <- rownames(x[[1]])
+		axi <- 1:sum_map
+		plot(x=axi,y=axi,type="n",main="Cis/Trans QTLplot",sub=paste("QTLs above threshold:",threshold,"LOD"),xlab="Markers (in cM)",ylab="Location of traits (in cM)",xaxt="n",yaxt="n")
+		bmatrix <- QTLs>threshold
+		pmatrix <- NULL
+		for(j in 1:nrow(QTLs)){
+			temp <- as.vector(bmatrix[j,])
+			tempv <- QTLs[j,]
+			value = 0
+			index = -1
+			for(l in 1:length(temp)){
+				if(temp[l]){
+					if( tempv[l] > value){
+						#New highest marker set the old index to false
+						if(index != -1){
+							temp[index] <- FALSE
+						}
+						#and store the new one
+						value = tempv[l]
+						index <- l
+					}else{				
+					#Lower marker
+						temp[l] <- FALSE
+					}
+				}else{
+					index = -1
+					value = 0
+				}
+			}
+			if(onlyPEAK){
+				bmatrix[j,] <- temp
+			}
+			if(highPEAK){
+				pmatrix <- rbind(pmatrix,temp)
+			}
+		}
+		locz <- NULL
+		for(marker in 1:ncol(QTLs)){
+			pos <- find.markerpos(cross, colnames(QTLs)[marker])
+			locz <- c(locz,round(chr_breaks[as.numeric(pos[[1]])] + as.numeric(pos[[2]])))
+		}
+		trait_locz <- NULL
+		for(j in 1:nrow(QTLs)){
+			values <- rep(NA,sum_map)
+			aa <- locz[bmatrix[j,]]
+			trait_locz <- c(trait_locz,chr_breaks[locations[j,1]] + locations[j,2])
+			values[aa] = chr_breaks[locations[j,1]] + locations[j,2]
+			points(values,pch=pch,cex=cex)
+		}
+		if(highPEAK){
+		for(j in 1:nrow(QTLs)){
+			values <- rep(NA,sum_map)
+			aa <- locz[pmatrix[j,]]
+			trait_locz <- c(trait_locz,chr_breaks[locations[j,1]] + locations[j,2])
+			values[aa] = chr_breaks[locations[j,1]] + locations[j,2]
+			points(values,pch=24,cex=1.25*cex,col="black",bg="red")
+		}
+		}
+		points(axi,type="l")		
+		points(axi+(cisarea/2),type="l",col="green")
+		points(axi-(cisarea/2),type="l",col="green")
+		chr_breaks <- c(chr_breaks,sum_map)
+		axis(1,at=chr_breaks,labels=FALSE)
+		axis(2,at=chr_breaks,labels=FALSE)
+		axis(1,at=locz,line=1,pch=24)
+		axis(2,at=seq(0,sum_map,25),line=1)
+	}else{
+		stop("invalid object supplied\n")
+	}
+}
+
+addloctocross <- function(cross,locations=NULL,locfile="locations.txt"){
+	if(is.null(locations)){
+		locations <- read.table(locfile,row.names=1,header=TRUE)
+	}
+	cat("Phenotypes in cross:",nphe(cross),"\n")
+	cat("Phenotypes in file:",nrow(locations),"\n")
+	if(max(as.numeric(rownames(locations))) != nphe(cross)){
+		stop("ID's of traits in file are larger than # of traits in crossfile.") 	
+	}
+	if(nphe(cross)==nrow(locations)){
+		locs <- vector(mode = "list", length = nphe(cross))
+		for(x in as.numeric(rownames(locations))){
+			if(names(cross$pheno)[x] == locations[x,1]){
+				locs[[x]] <- locations[x,2:3]
+				rownames(locs[[x]]) <- locations[x,1]
+			}else{
+				warning("Mismatch between name of trait in cross & file.\n")
+			}
+		}
+	}else{
+		stop("Number of traits in cross & file don't match.") 	
+	}
+	cross$locations <- locs
+	cross
+}
+
 
 polyplot <- function( x, type='b', legend=TRUE,legendloc=0, labels=NULL, cex = par("cex"), pch = 19, gpch = 21, bg = par("bg"), color = par("fg"), col=NULL, ylim=range(x[is.finite(x)]), xlim = NULL, 
 					  main = NULL, xlab = NULL, ylab = NULL, add=FALSE, ... ){
@@ -101,18 +224,19 @@ polyplot <- function( x, type='b', legend=TRUE,legendloc=0, labels=NULL, cex = p
 	invisible()															# return the plot
 }
 
+getThird <- function(x){
+	x[,3]
+}
+
 plotMQMall <- function(result, type="C", theta=30, phi=15, ...){
 	#Helperfunction to plot MQMmulti objects made by doing multiple scanMQM runs (in a LIST)
   if(class(result)[2] != "MQMmulti")
-		ourstop("Wrong type of result file, please supply a valid MQMmulti object.") 
+		stop("Wrong type of result file, please supply a valid MQMmulti object.") 
 
   if(type=="C"){
     #Countour plot
-    c <- NULL
-    for(i in 1:length(result)){
-      #Collect all the "QTL PHENO_TYPE" colums of the result
-      c <- rbind(c,result[[i]][,3])
-    }
+    temp <- lapply(result,getThird)
+	c <- do.call("rbind",temp)
     c <- t(c)
     contour(
             x=seq(1,dim(c)[1]),
@@ -125,11 +249,9 @@ plotMQMall <- function(result, type="C", theta=30, phi=15, ...){
   }
   if(type=="I"){
     #Image plot
-    c <- NULL
-    for(i in 1:length(result)){
-      c <- rbind(c,result[[i]][,3])
-    }
-    c <- t(c)
+    temp <- lapply(result,getThird)
+	c <- do.call("rbind",temp)
+	c <- t(c)
     image(x=1:dim(c)[1],y=1:dim(c)[2],c,
           xlab="Markers",ylab="Trait",
           col=rainbow((max(c)/5)+25,1,1.0,0.1),
@@ -138,10 +260,8 @@ plotMQMall <- function(result, type="C", theta=30, phi=15, ...){
   }
   if(type=="D"){
     #3D perspective plot
-    c <- NULL
-    for(i in 1:length(result)){
-      c <- rbind(c,result[[i]][,3])
-    }
+    temp <- lapply(result,getThird)
+	c <- do.call("rbind",temp)
     c <- t(c)
     persp(x=1:dim(c)[1],y=1:dim(c)[2],c,
           theta = theta, phi = phi, expand = 1,

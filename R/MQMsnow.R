@@ -40,6 +40,7 @@ snowCoreALL <- function(x,all_data,Funktie,verbose=FALSE,...){
 	}else{
 		result <- Funktie(cross=all_data,pheno.col=x,...)
 	}
+	colnames(result)[3] <- paste("lod",names(cross$pheno)[x])
 	e <- proc.time()
         if(verbose) {
           cat("------------------------------------------------------------------\n")
@@ -55,11 +56,11 @@ snowCoreBOOT <- function(x,all_data,Funktie,method,verbose=FALSE,...){
 	b <- proc.time()
 	result <- NULL
 	if(!method){
-		//random permutation
+		#random permutation
 		neworder <- sample(nind(all_data))			
 		all_data$pheno[[1]] <- all_data$pheno[[1]][neworder]
 	}else{
-		//parametric permutation
+		#parametric permutation
 		pheno <- all_data$pheno[[1]]
 		variance <- var(pheno,na.rm = TRUE)
 		for(j in 1:nind(all_data)) {

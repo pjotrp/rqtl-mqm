@@ -23,6 +23,11 @@
  *
  **********************************************************************/
 
+ /* Test interface  intended to only calls mapQTL with 1 trait using precalculated data */
+void R_testScan(int *num_ind, int *num_markers, int *num_genotypes,double *trait,double *markerdistances,int *geno,double *probabilitymatrix, double *markerrf,int *cof,int *stepsize,int *windowsize);
+
+int mqm(int Nind, int Nmark, int nGeno, vector y, vector mapdistance, cvector mappositions, imatrix Geno, Mmatrix Prob, 
+			  matrix r, ivector cofactor, ivector selcofactor, double windowsize,int stepsize,char fitQTL,char dominance,char REMLorML);
 
 /**********************************************************************
  * 
@@ -35,7 +40,7 @@ void R_scanMQM(int *Nind,int *Nmark,int *Npheno,
 			   int *geno,int *chromo, double *dist, double *pheno, 
 			   int *cofactors, int *backwards, int *RMLorML,double *alfa,int *emiter,
 			   double *windowsize,double *steps,
-			   double *stepmi,double *stepma,int *NRun, double *qtl,int *re_estimate,int *crosstype,int *domi,int *verbose);
+			   double *stepmi,double *stepma, int *nRun,int *out_Naug,int *indlist,  double *qtl,int *reestimate,int *crosstype,int *domi,int *verbose);
 
 
 /**********************************************************************
@@ -48,7 +53,7 @@ void R_scanMQM(int *Nind,int *Nmark,int *Npheno,
 void scanMQM(int Nind, int Nmark,int Npheno,int **Geno,int **Chromo, 
 			 double **Dist, double **Pheno, int **Cofactors, int Backwards, int RMLorML,double Alfa,int Emiter,
 			 double Windowsize,double Steps,
-			 double Stepmi,double Stepma,int NRUN, double **QTL,int reestimate,int crosstype,int domi,int verbose);
+			 double Stepmi,double Stepma,int NRUN,int out_Naug,int **INDlist, double **QTL, int re_estimate,int crosstype,int domi,int verbose);
 
 /**********************************************************************
  * 

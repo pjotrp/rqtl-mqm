@@ -37,8 +37,8 @@ extern "C"
 #include <R_ext/PrtUtil.h>
 #include <R_ext/RS.h> /* for Calloc, Realloc */
 #include <R_ext/Utils.h>
-#include "MQMscan.h"
 #include "MQMdata.h"
+#include "MQMscan.h"
 #include "MQMsupport.h"
 #include "MQMregression.h"
 #include "MQMmapQTL.h"

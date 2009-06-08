@@ -38,6 +38,7 @@ extern "C"
 #include <math.h>
 #include <Rmath.h>
 #include "MQMdata.h"
+#include "MQMscan.h"
 #include "MQMsupport.h"
 #include "MQMinterfaces.h"   /*Testing */
 #include "MQMreDefine.h"
@@ -241,28 +242,42 @@ void R_scanMQM(int *Nind,int *Nmark,int *Npheno,
 
 
 /* Test interface  intended to only calls mapQTL with 1 trait using precalculated data */
-void R_testScan(int *num_ind, int *num_markers, int *num_genotypes,double *trait,double *markerdistances,int *geno,double *probabilitymatrix, double *markerrf, *cof,int *stepsize,int *windowsize){
+void R_testScan(int *num_ind, int *num_markers, int *num_genotypes,double *trait,double *markerdistances,int *geno,double *probabilitymatrix, double *markerrf,int *cof,int *stepsize,int *windowsize){
    int **Geno;
    int **Cof;
+   int **Cofs;   
    double **Rfs;
    double ***Prob;
    double **Dist;  
    double **Pheno;
    char *Positions;
-   
+   Rprintf("We are inside C\n");
    reorg_geno(*num_ind,*num_markers,geno,&Geno);
+   Rprintf("Geno Done\n");
    reorg_geno(*num_markers,1,cof,&Cof);
+   Rprintf("Cof Done\n");
    reorg_geno(*num_markers,1,cof,&Cofs);
+   Rprintf("Cofs Done\n");
    reorg_pheno(*num_markers,*num_markers,markerrf,&Rfs);
+   Rprintf("Rfs Done\n");
    reorg_pheno(*num_markers,1,markerdistances,&Dist);
+   Rprintf("MDist Done\n");
    reorg_pheno(*num_ind,1,trait,&Pheno);
+   Rprintf("Pheno Done\n");
+   Rprintf("Reorganised everything\n");
+   char fitQTL = 'Y';
+   char domi = 'N';
+   char REMLorML = '1';
    /*Dont forget: Cof -> Cofs & Positions == empty*/
-   mqm(*num_ind,*num_markers,*num_genotypes,Pheno,Dist,Positions,Geno,Prob,Rfs,Cof,Cofs,*stepsize,*windowsize,"Y","N","1")
+   Rprintf("Gonna call\n");
+   int ret = mqm(*num_ind,*num_markers,*num_genotypes,Pheno[0],Dist[0],Positions,Geno,Prob,Rfs,Cof[0],Cofs[0],*stepsize,*windowsize,fitQTL,domi,REMLorML);
+   Rprintf("Done now 2 send back\n");
 }
 
-double mqm(int Nind, int Nmark, int nGeno, vector y, cvector mapdistance, vector mappositions, matrix Geno, double ***Prob  
-			  vector r, cvector cofactor, cvector selcofactor, double windowsize,double stepsize,char fitQTL,char dominance,char REMLorML){      
-
+int mqm(int Nind, int Nmark, int nGeno, vector y, vector mapdistance, cvector mappositions, imatrix Geno, Mmatrix Prob, 
+			  matrix Rfs, ivector cofactor, ivector selcofactor, double windowsize,int stepsize,char fitQTL,char dominance,char REMLorML){      
+	Rprintf("Nind= %d;Nmark= %d;nGeno= %d\n",Nind,Nmark,nGeno);
+	return 1;
 }
 
 

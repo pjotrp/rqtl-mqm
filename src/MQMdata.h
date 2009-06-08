@@ -33,6 +33,7 @@ typedef double*  vector;
 typedef char**   cmatrix;
 typedef char*    cvector;
 typedef int*  ivector;
+typedef int**  imatrix;
 
 /*
 Data augmentation routing

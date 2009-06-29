@@ -38,7 +38,7 @@ extern "C"
 #include "MQMprob.h"
 #include "MQMreDefine.h"
 
-#include "MQMutil.h"
+#include "util.h"
 
 
   char determin_cross(int *Nmark,int *Nind,int **Geno,int *crosstype) {
@@ -46,19 +46,19 @@ extern "C"
 		for(int j=0; j< *Nind; j++){
 			//Some lame ass checks to see if the cross really is the cross we got (So BC can't contain 3's (BB) and RILS can't contain 2's (AB)
 			if(Geno[i][j] != 9 && Geno[i][j] > 3 && (*crosstype) != 1){
-				Rprintf("INFO: Stange genotype pattern, switching to F2\n");
+				Rprintf("INFO: Strange genotype pattern, switching to F2\n");
 				Rprintf("ind = %d marker = %d Geno = %d\n", i+1, j+1, Geno[i][j]);
 				(*crosstype) = 1;
 				break;
 			}
 			if(Geno[i][j] == 3 && (*crosstype) == 2){
-				Rprintf("INFO: Stange genotype pattern, switching from BC to F2\n");
+				Rprintf("INFO: Strange genotype pattern, switching from BC to F2\n");
 				(*crosstype) = 1;
 				break;
 			}
 			//IF we have a RIL and find AB then Rqtl messed up, so we have a BC genotype
 			if(Geno[i][j] == 2 && (*crosstype) == 3){
-				Rprintf("INFO: Stange genotype pattern, switching from RISELF to BC\n");
+				Rprintf("INFO: Strange genotype pattern, switching from RISELF to BC\n");
 				(*crosstype) = 2;
 				break;
 			}
@@ -516,7 +516,7 @@ extern "C"
 
                    if (iaug+3>maxNaug)
                    {       
-                    Rprintf("ERROR: Dataset too large after augmentation\n");
+                    Rprintf("ERROR: Dataset too large after augmentation - your CROSS data may have been corrupted\n");
                     if(verbose) Rprintf("INFO: Recall procedure with larger value for augmentation parameters or lower the parameter neglect\n");
 					// Better not free them, we don't know if the arrays already contain something, perhaps not... then we would segfault in R
 					//Free(newy);

@@ -25,10 +25,9 @@
  * Contains: 
  *
  **********************************************************************/
+using namespace std;
 #include <fstream>
 #include <iostream>
-
-using namespace std;
 
 extern "C"
 {
@@ -41,7 +40,7 @@ extern "C"
 #include "MQMscan.h"
 #include "MQMdata.h"
 #include "MQMsupport.h"
-#include "MQMRegression.h"
+#include "MQMregression.h"
 #include "MQMmapQTL.h"
 #include "MQMmixture.h"
 #include "MQMprob.h"
@@ -55,9 +54,6 @@ void analyseF2(int Nind, int Nmark, cvector *cofactor, cmatrix marker, vector y,
 			   double stepmin,double stepmax,double alfa,int em,int out_Naug,int **INDlist,char reestimate,char crosstype,char dominance,int verbose)
 {    
     if(verbose){Rprintf("INFO: Starting C-part of the MQM analysis\n");}
-    for (int i=0; i<Nind; i++){
-        //Rprintf("%d %f\n",i,y[i]);   
-    }
 	int Naug;
 	int run=0;
     cvector position;
@@ -206,15 +202,9 @@ void analyseF2(int Nind, int Nmark, cvector *cofactor, cmatrix marker, vector y,
 
     vector newweight;
     newweight= newvector(Naug);
-    //Creation of lookup table
-		if(verbose){Rprintf("INFO: Creating look-up table\n");}
-		Mmatrix MendelM;
-		MendelM = newMmatrix(Nmark,3,2);
-		create_lookup_table(MendelM,Nmark,r,crosstype);
-		if(verbose){Rprintf("INFO: DONE Creating look-up table\n");}
 	//Re-estimation of recombinant frequencies
 	double max;
-	max = rmixture(newmarker, newweight, r, position, newind,Nind, Naug, Nmark, mapdistance,reestimate,crosstype,MendelM,verbose);
+	max = rmixture(newmarker, newweight, r, position, newind,Nind, Naug, Nmark, mapdistance,reestimate,crosstype,verbose);
 	if(max > stepmax){
 		Rprintf("ERROR: Reestimation of the map put markers at: %f Cm\n",max);
 		Rprintf("ERROR: Rerun the algorithm with a step.max larger than %f Cm\n",max);
@@ -300,16 +290,16 @@ void analyseF2(int Nind, int Nmark, cvector *cofactor, cmatrix marker, vector y,
 	F2= 2.0* F2; // 9-6-1998 using threshold x*F(x,df,alfa)
 
 	weight[0]= -1.0;
-	logLfull= QTLmixture(marker,(*cofactor),r,position,y,ind,Nind,Naug,Nmark,&variance,em,&weight,REMLorML,fitQTL,dominance,crosstype, MendelM,verbose);
+	logLfull= QTLmixture(marker,(*cofactor),r,position,y,ind,Nind,Naug,Nmark,&variance,em,&weight,REMLorML,fitQTL,dominance,crosstype,verbose);
 	if(verbose){
 		Rprintf("INFO: Log-likelihood of full model= %f\n",logLfull);
 		Rprintf("INFO: Residual variance= %f\n",variance);
 		Rprintf("INFO: Trait mean= %f \nINFO: Trait variation= %f\n",ymean,yvari);
 	}
 	if (Backwards==1)    // use only selected cofactors
-		logLfull= backward(Nind, Nmark, (*cofactor), marker, y, weight, ind, Naug, logLfull,variance, F1, F2, &selcofactor, r, position, &informationcontent, mapdistance,&Frun,run,REMLorML,fitQTL,dominance, em, windowsize, stepsize, stepmin, stepmax,crosstype,MendelM,verbose);
+		logLfull= backward(Nind, Nmark, (*cofactor), marker, y, weight, ind, Naug, logLfull,variance, F1, F2, &selcofactor, r, position, &informationcontent, mapdistance,&Frun,run,REMLorML,fitQTL,dominance, em, windowsize, stepsize, stepmin, stepmax,crosstype,verbose);
 	if (Backwards==0) // use all cofactors
-		logLfull= mapQTL(Nind, Nmark, (*cofactor), (*cofactor), marker, position,(*mapdistance), y, r, ind, Naug, variance, 'n', &informationcontent,&Frun,run,REMLorML,fitQTL,dominance, em, windowsize, stepsize, stepmin, stepmax,crosstype,MendelM,verbose); // printout=='n'
+		logLfull= mapQTL(Nind, Nmark, (*cofactor), (*cofactor), marker, position,(*mapdistance), y, r, ind, Naug, variance, 'n', &informationcontent,&Frun,run,REMLorML,fitQTL,dominance, em, windowsize, stepsize, stepmin, stepmax,crosstype,verbose); // printout=='n'
 	
 	// ---- Write output / send it back to R
 	//Cofactors that made it to the final model
@@ -339,7 +329,6 @@ void analyseF2(int Nind, int Nmark, cvector *cofactor, cmatrix marker, vector y,
 	Free(informationcontent);
 	Free(Frun);
 	delcmatrix(marker);
-	delMmatrix(MendelM);
 	Free(y);
 	Free(chr);
 	Free(selcofactor);
@@ -353,7 +342,7 @@ void analyseF2(int Nind, int Nmark, cvector *cofactor, cmatrix marker, vector y,
    analoog vector XtWY wordt full xtwy genoemd;
 */
 double backward(int Nind, int Nmark, cvector cofactor, cmatrix marker, vector y, vector weight, int* ind, int Naug, double logLfull, double variance, double F1, double F2, cvector* newcofactor, vector r, cvector position,vector *informationcontent,vector *mapdistance,matrix *Frun,int run,char REMLorML,char fitQTL,char dominance,int em, double windowsize,double stepsize,
-			  double stepmin,double stepmax,char crosstype,Mmatrix MendelM,int verbose){
+			  double stepmin,double stepmax,char crosstype,int verbose){
 	int dropj=0, Ncof=0;
     double maxlogL, savelogL, maxF=0.0; //, minlogL=logLfull, maxFtest=0.0;
     char finished='n'; //, biasadj='n';
@@ -372,13 +361,13 @@ double backward(int Nind, int Nmark, cvector cofactor, cmatrix marker, vector y,
 				//Rprintf("Drop marker %d\n",j);
 				(*newcofactor)[j]='0';
 				if (REMLorML=='1') variance= -1.0;
-				logL[j]= QTLmixture(marker,(*newcofactor),r,position,y,ind,Nind,Naug,Nmark,&variance,em,&weight,REMLorML,fitQTL,dominance,crosstype, MendelM,verbose);
+				logL[j]= QTLmixture(marker,(*newcofactor),r,position,y,ind,Nind,Naug,Nmark,&variance,em,&weight,REMLorML,fitQTL,dominance,crosstype,verbose);
 				(*newcofactor)[j]='1';
 			}else if ((*newcofactor)[j]=='2'){
 				//Rprintf("Drop marker %d\n",j);
 				(*newcofactor)[j]='0';
 				if (REMLorML=='1') variance= -1.0;
-				logL[j]=  QTLmixture(marker,(*newcofactor),r,position,y,ind,Nind,Naug,Nmark,&variance,em,&weight,REMLorML,fitQTL,dominance,crosstype, MendelM,verbose);
+				logL[j]=  QTLmixture(marker,(*newcofactor),r,position,y,ind,Nind,Naug,Nmark,&variance,em,&weight,REMLorML,fitQTL,dominance,crosstype,verbose);
 				(*newcofactor)[j]='2';
 			}else if ((*newcofactor)[j]!='0'){
 				Rprintf("ERROR: Something is wrong when trying to parse the newcofactorslist.\n");
@@ -396,7 +385,7 @@ double backward(int Nind, int Nmark, cvector cofactor, cmatrix marker, vector y,
 	#ifndef ALONE
 		//Rprintf("TEST BW\n");
 		R_CheckUserInterrupt(); /* check for ^C */
-		R_ProcessEvents(); /*  Try not to crash windows etc*/
+		//R_ProcessEvents(); /*  Try not to crash windows etc*/
 		R_FlushConsole();
 	#endif
 		if  ( ((*newcofactor)[dropj]=='1') && ( F2> 2.0*(savelogL-maxlogL)) ){   
@@ -428,7 +417,7 @@ double backward(int Nind, int Nmark, cvector cofactor, cmatrix marker, vector y,
 	Rprintf("MODEL: --------------------:END MODEL:--------------------\n");
 	}
     maxF= mapQTL(Nind, Nmark, cofactor, (*newcofactor), marker, position,
-           (*mapdistance), y, r, ind, Naug, variance, 'n', informationcontent,Frun,run,REMLorML,fitQTL,dominance, em, windowsize, stepsize, stepmin, stepmax,crosstype, MendelM,verbose); // printoutput='n'
+           (*mapdistance), y, r, ind, Naug, variance, 'n', informationcontent,Frun,run,REMLorML,fitQTL,dominance, em, windowsize, stepsize, stepmin, stepmax,crosstype,verbose); // printoutput='n'
     //Rprintf("Backward selection finished\n");
     Free(logL);
     return maxF;

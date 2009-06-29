@@ -11,11 +11,11 @@ link_libraries(${R_LIBRARY})
 
 add_executable (sMQM 
 MQMdata.cpp        MQMmapQTL.h     MQMreDefine.h      MQMsupport.cpp
-MQMdata.h          MQMmixture.cpp  MQMRegression.cpp  MQMsupport.h
-MQMinterfaces.cpp  MQMmixture.h    MQMRegression.h    MQMutil.cpp
-MQMinterfaces.h    MQMprob.cpp     MQMscan.cpp        MQMutil.h
+MQMdata.h          MQMmixture.cpp  MQMregression.cpp  MQMsupport.h
+MQMinterfaces.cpp  MQMmixture.h    MQMregression.h    
+MQMinterfaces.h    MQMprob.cpp     MQMscan.cpp        
 MQMmapQTL.cpp      MQMprob.h       MQMscan.h
-
+util.h util.c      MQMmain.cpp
 )
 
 

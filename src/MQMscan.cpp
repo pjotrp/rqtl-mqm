@@ -23,10 +23,10 @@
  * Contains: R_scanMQM, scanMQM
  *
  **********************************************************************/
+using namespace std;
+
 #include <fstream>
 #include <iostream>
-
-using namespace std;
 
 extern "C"
 {
@@ -42,7 +42,7 @@ extern "C"
 #include "MQMinterfaces.h"   /*Testing */
 #include "MQMreDefine.h"
 
-#include "MQMutil.h"
+#include "util.h"
 double absdouble(double x)
 {
 //{      double z; z= (x<0 ? -x : x); return z;}
@@ -70,7 +70,20 @@ int mod(int a, int b)
     //return a-b*c;
 }
 
+/**********************************************************************
+void reorg_geno(int n_ind, int n_pos, int *geno, int ***Geno)
+{
+  int i;
 
+  *Geno = (int **)R_alloc(n_pos, sizeof(int *));
+
+  (*Geno)[0] = geno;
+  for(i=1; i< n_pos; i++) 
+    (*Geno)[i] = (*Geno)[i-1] + n_ind;
+
+}
+
+*/
 void reorg_pheno(int n_ind, int n_mar, double *pheno, double ***Pheno)
 {
   int i;
@@ -94,191 +107,136 @@ void reorg_int(int n_ind, int n_mar, int *pheno, int ***Pheno)
     (*Pheno)[i] = (*Pheno)[i-1] + n_ind;
 }
 
-int count_lines(char *file){
-	//NUM: number of elements on 1 line
-	int cnt=0;
-	char line[100];
-	ifstream file_stream(file, ios::in);
-	while (!file_stream.eof()){
-        file_stream >> line;
-		cnt++;
-	}
-	file_stream.close();
-	return cnt;
-}
 
 
-int main(int argc,char *argv[]){
-    Rprintf("MQM standalone version\n");
-	int phenotype=0;
-	int verbose=0;
-	for (int i=1; i<argc; i++) {
-	if (!strcmp(argv[i],argv[0])) continue;
-	if (argv[i][0] != '-') Rprintf("dash needed at argument");
-	char c = toupper(argv[i][1]);
-	if (c == 'V') {verbose =1; continue;}
-	// -argum=value
-	if (argv[i][2]!='='){
-		Rprintf("equal symbol needed at argument");
-	}
+/**********************************************************************
+ * 
+ * scanMQM
+ *
+ * 
+ **********************************************************************/
 
-	switch(c)
-	{
-	  case 'T': phenotype = atoi(&argv[i][3]); break;
-	  default: Rprintf("Unknown parameter");
-	}
-    }
-	char *genofile = "geno.dat";
-	char *phenofile = "pheno.dat";
-	char *mposfile = "markerpos.txt";
-	char *chrfile = "chrid.dat";
-	char *setfile = "settings.dat";
-    double **QTL;  
+void scanMQM(int Nind, int Nmark,int Npheno,int **Geno,int **Chromo, 
+			 double **Dist, double **Pheno, int **Cofactors, int Backwards, int RMLorML,double Alfa,int Emiter,
+			 double Windowsize,double Steps,
+			 double Stepmi,double Stepma,int NRUN,int out_Naug,int **INDlist, double **QTL, int re_estimate,int crosstype,int domi,int verbose){
+	
 	ivector f1genotype;
-	ivector chr;
+	cmatrix markers;
 	cvector cofactor;
 	vector mapdistance;
-	vector pos;
-	matrix pheno_value;
-	cmatrix markers;
-	ivector INDlist;
-    int stepmin = 0;
-    int stepmax = 220;
-    int stepsize = 5;
+	
+	markers= newcmatrix(Nmark,Nind);
+	f1genotype = newivector(Nmark);
+	cofactor= newcvector(Nmark);  
+	mapdistance= newvector(Nmark);
+	
+	int cof_cnt=0;
+ 	
+   	//Change all the markers from Karl format to our own
+	change_coding(&Nmark,&Nind,Geno,markers, crosstype);
 
-	int cnt=0;
-	int cInd=0; //Current individual
-	int nInd=0;
-	int nMark=0;
-	int backwards=0;
-	int nPheno=0;
-	int windowsize=0;
-	cnt = 0;
-	char *name;
-	int maxIter;
-	double alpha;
-    nMark=count_lines(chrfile);
-	char peek_c;
+	for(int i=0; i< Nmark; i++){
+		f1genotype[i] = 12;
+		//receiving mapdistances
+		mapdistance[i]=999.0;
+		mapdistance[i]=Dist[0][i];
+	 	cofactor[i] = '0';
+		if(Cofactors[0][i] == 1){
+			cofactor[i] = '1';
+			cof_cnt++;
+		}
+		if(Cofactors[0][i] == 2){
+			cofactor[i] = '2';
+			cof_cnt++;
+		}
+		if(cof_cnt+10 > Nind){
+			Rprintf("ERROR: Setting this many cofactors would leave less than 10 degrees of freedom.\n");
+			return;
+		}
+	}
 
-	if(verbose){Rprintf("INFO: Loading settings from file\n");}
-	ifstream setstr(setfile, ios::in);
-    setstr >> nInd;
-	if(verbose){Rprintf("nInd: %d\n",nInd);}
-    setstr >> nPheno;
-	if(verbose){Rprintf("nPheno: %d\n",nPheno);}
-    setstr >> stepmin;
-	if(verbose){Rprintf("SMin: %d\n",stepmin);}
-	setstr >> stepmax;
-	if(verbose){Rprintf("SMax: %d\n",stepmax);}
-	setstr >> stepsize;
-    if(verbose){Rprintf("SSiz: %d\n",stepsize);	}
-	setstr >> windowsize;
-	if(verbose){Rprintf("WSiz: %d\n",windowsize);}
-	setstr >> alpha;
-	if(verbose){Rprintf("A: %f\n",alpha);}
-	setstr >> maxIter;
-	if(verbose){Rprintf("Miter: %d\n",maxIter);}
-    f1genotype = newivector(nMark);	
-	cofactor= newcvector(nMark);  
-	mapdistance= newvector(nMark);
-	markers= newcmatrix(nMark,nInd);
-	pheno_value = newmatrix(nPheno,nInd);
-	chr = newivector(nMark);
-	INDlist= newivector(nInd);
-	pos = newvector(nMark);
-    int sum = 0;
-    for(int i=0; i< nMark; i++){
-      setstr >> cofactor[i];
-   	  if(cofactor[i] == '1'){
-      sum++;               
-      }
-    }
-    
-    if(sum > 0){
-	if(verbose){Rprintf("# Starting backward elimination of %d cofactors\n",sum);}
-    backwards = 1;       
-    }else{
-    backwards = 0;       
-    }
-    setstr.close();		
-	if(verbose){Rprintf("# of individuals: %d\n",nInd);}
-	if(verbose){Rprintf("# of markers: %d\n",nMark);}
-    cnt=0;
-	cInd = 0;    
-	ifstream geno(genofile, ios::in);
-	while (!geno.eof()){
-        if(cnt < nMark){
-          	geno >> markers[cnt][cInd];
-			cnt++;
-        }else{
-			cnt = 0;
-			cInd++;
-		}	
+	char reestimate = 'y';
+	if(re_estimate == 0){
+		reestimate = 'n';
 	}
-	geno.close();
-	if(verbose){Rprintf("Genotypes done %d %d\n",cInd,cnt);}
-	cnt = 0;
-	cInd = 0;
-	ifstream pheno(phenofile, ios::in);
-	while (!pheno.eof()){
-        if(cnt < nPheno){
-		       pheno >> pheno_value[cnt][cInd];
-	           //Rprintf("%d,%d\n",cnt,cInd);
-		    cnt++;
-        }else{
-			cnt = 0;
-			cInd++;              
-        }
+	//determine what kind of cross we have
+	char cross = determin_cross(&Nmark,&Nind,Geno,&crosstype);
+	//set dominance accordingly
+	if(cross != 'F'){
+		if(verbose==1){Rprintf("INFO: Dominance setting ignored (dominance=0)\n");}
+		domi = 0;
+	}else{
+		domi= domi;
 	}
-	pheno.close();
-	if(verbose){Rprintf("Phenotype done %d %d\n",cInd,cnt);}
-	cnt = 0;
-	ifstream mpos(mposfile, ios::in);
-	while (!mpos.eof()){
-		peek_c=mpos.peek();
-    	if(peek_c=='\t' || peek_c == ' '){
-           	mpos >> pos[cnt];
-          //  Rprintf("%f\n",pos[cnt]);
-            cnt++;
-		}else{
-            mpos >> peek_c;
-        }
+
+	char dominance='n';
+	if(domi != 0){
+		dominance='y';
+	}
+	
+	//WE HAVE EVERYTHING START WITH MAIN SCANNING FUNCTION
+	analyseF2(Nind, Nmark, &cofactor, markers, Pheno[(Npheno-1)], f1genotype, Backwards,QTL,&mapdistance,Chromo,NRUN,RMLorML,Windowsize,Steps,Stepmi,Stepma,Alfa,Emiter,out_Naug,INDlist,reestimate,cross,dominance,verbose);
+	
+	if(re_estimate){
+		if(verbose==1){Rprintf("INFO: Sending back the reestimated map used during analysis\n");}
+		for(int i=0; i< Nmark; i++){
+			Dist[0][i]=mapdistance[i];
+		}
+	}
+	if(Backwards){
+		if(verbose==1){Rprintf("INFO: Sending back the model\n");}
+		for(int i=0; i< Nmark; i++){
+			Cofactors[0][i]=cofactor[i];
+		}
 	}	
-	mpos.close();
+	//Rprintf("Starting Cleanup\n");
+	delcmatrix(markers);
+	Free(f1genotype);
+	Free(cofactor);
+	Free(mapdistance);
+	if(verbose==1){Rprintf("INFO: All done in C returning to R\n");}
+	 #ifndef ALONE
+	 R_CheckUserInterrupt(); /* check for ^C */
+	// R_ProcessEvents(); /*  Try not to crash windows etc*/
+	 R_FlushConsole();
+	 #endif
+	return;
+}  /* end of function scanMQM */
 
-    if(verbose){Rprintf("Positions done %d\n",cnt);}
-	cnt = 0;	
-	ifstream chrstr(chrfile, ios::in);
-	int max_chr = 0;
-	while (!chrstr.eof()){
-		chrstr >> chr[cnt];
-        if(chr[cnt] > max_chr){
-          max_chr = chr[cnt];           
-        }
-		cnt++;
-	}
-	chrstr.close();
-	if(verbose){Rprintf("Chromosomes done %d -> # %d Chromosomes\n",cnt,max_chr);}
-    int something = 2*max_chr*(((stepmax)-(stepmin))/ (stepsize));
-    QTL = newmatrix(something,1);
 
-	for(int i=0; i< nMark; i++){
-    	cofactor[i] = '0';
-    	f1genotype[i] = 12;
-    	mapdistance[i]=999.0;
-		mapdistance[i]=pos[i];
-    }
-	for(int i=0; i< nInd; i++){
-    	INDlist[i] = i;
-    }
-    char estmap = 'n';
-    //reorg_pheno(2*(*chromo) * (((*stepma)-(*stepmi))/ (*steps)),1,qtl,&QTL);
 
-	//Rprintf("INFO: Cofactors %d\n",sum);
-	//ALL information is read in or calculated, so we gonna start MQM, however Rprintf crashes MQM
+/**********************************************************************
+ * 
+ * R_scanMQM
+ * 
+ **********************************************************************/
 
-    Rprintf("Starting phenotype: %d\n",phenotype);
-  	analyseF2(nInd, nMark, &cofactor, markers, pheno_value[phenotype], f1genotype, backwards,QTL, &mapdistance,&chr,0,0,windowsize,stepsize,stepmin,stepmax,alpha,maxIter,nInd,&INDlist,estmap,'F',0,verbose);
-	return 1;
-}
+void R_scanMQM(int *Nind,int *Nmark,int *Npheno,
+			   int *geno,int *chromo, double *dist, double *pheno, 
+			   int *cofactors, int *backwards, int *RMLorML,double *alfa,int *emiter,
+			   double *windowsize,double *steps,
+			   double *stepmi,double *stepma, int *nRun,int *out_Naug,int *indlist,  double *qtl,int *reestimate,int *crosstype,int *domi,int *verbose){
+   int **Geno;
+   int **Chromo;
+   double **Dist;  
+   double **Pheno;   
+   double **QTL;   
+   int **Cofactors;
+   int **INDlist;
+   
+   //Reorganise the pointers into arrays, ginletons are just cast into the function
+   reorg_geno(*Nind,*Nmark,geno,&Geno);
+   reorg_int(*Nmark,1,chromo,&Chromo);   
+   reorg_pheno(*Nmark,1,dist,&Dist);
+   //Here we have  the assumption that step.min is negative this needs to be split in 2
+   reorg_pheno(2*(*chromo) * (((*stepma)-(*stepmi))/ (*steps)),1,qtl,&QTL);
+   reorg_pheno(*Nind,*Npheno,pheno,&Pheno);
+   reorg_int(*Nmark,1,cofactors,&Cofactors);  
+   reorg_int(*out_Naug,1,indlist,&INDlist);  
+   //Done with reorganising lets start executing
+   
+   scanMQM(*Nind,*Nmark,*Npheno,Geno,Chromo,Dist,Pheno,Cofactors,*backwards,*RMLorML,*alfa,*emiter,*windowsize,*steps,*stepmi,*stepma,*nRun,*out_Naug,INDlist,QTL, *reestimate,*crosstype,*domi,*verbose);
+} /* end of function R_scanMQM */
+
 }

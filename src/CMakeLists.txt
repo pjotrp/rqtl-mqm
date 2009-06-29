@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
 
 set(CMAKE_MODULE_PATH "../cmake-modules/")
+ENABLE_TESTING()
 
 FIND_PACKAGE(RLibs)
 
@@ -16,4 +17,5 @@ MQMinterfaces.h    MQMprob.cpp     MQMscan.cpp        MQMutil.h
 MQMmapQTL.cpp      MQMprob.h       MQMscan.h
 
 )
+
 

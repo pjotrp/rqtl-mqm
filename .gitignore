@@ -33,3 +33,7 @@ CMakeFiles
 CMakeCache.txt
 install_manifest.txt
 *.aux
+CMakeFiles
+Makefile
+cmake_install.cmake
+src/sMQM

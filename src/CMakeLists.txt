@@ -1,15 +1,19 @@
+cmake_minimum_required(VERSION 2.6)
+
+set(CMAKE_MODULE_PATH "../cmake-modules/")
+
+FIND_PACKAGE(RLibs)
+
 include_directories (.)
 
-# add_definitions(`sdl-config --cflags`)
-# link_libraries(SGE `sdl-config --libs` log4cxx dl)
+link_libraries(${R_LIBRARY})
 
 add_executable (sMQM 
 MQMdata.cpp        MQMmapQTL.h     MQMreDefine.h      MQMsupport.cpp
 MQMdata.h          MQMmixture.cpp  MQMRegression.cpp  MQMsupport.h
 MQMinterfaces.cpp  MQMmixture.h    MQMRegression.h    MQMutil.cpp
 MQMinterfaces.h    MQMprob.cpp     MQMscan.cpp        MQMutil.h
-MQMmapQTL.cpp      MQMprob.h       MQMScan.h
+MQMmapQTL.cpp      MQMprob.h       MQMscan.h
 
 )
 
-# add_custom_command(TARGET reversi PRE_BUILD COMMAND ./bn.sh)

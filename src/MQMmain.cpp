@@ -57,6 +57,7 @@ int count_lines(char *file){
 	return cnt;
 }
 
+#ifdef STANDALONE
 
 int main(int argc,char *argv[]){
     Rprintf("MQM standalone version\n");
@@ -232,3 +233,7 @@ int main(int argc,char *argv[]){
 	return 1;
 }
 }
+
+#else
+  #error "Is this a STANDALONE version? STANDALONE should be defined in the build system!"
+#endif

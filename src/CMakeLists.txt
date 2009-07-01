@@ -6,6 +6,7 @@ ENABLE_TESTING()
 FIND_PACKAGE(RLibs)
 
 include_directories (.)
+add_definitions(-DSTANDALONE)
 
 link_libraries(${R_LIBRARY})
 

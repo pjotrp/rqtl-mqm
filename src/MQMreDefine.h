@@ -23,9 +23,9 @@
  *
  **********************************************************************/
  
-#define ALONE
+// #define STANDALONE - should be defined in the build system
 
-#ifdef ALONE
+#ifdef STANDALONE
        #undef Rprintf
        #define Rprintf(args...) printf(args)
 #endif

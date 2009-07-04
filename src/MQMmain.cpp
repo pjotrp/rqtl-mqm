@@ -44,7 +44,7 @@ extern "C"
 
 #include "util.h"
 
-int count_lines(char *file){
+int count_lines(const char *file){
 	//NUM: number of elements on 1 line
 	int cnt=0;
 	char line[100];
@@ -79,11 +79,11 @@ int main(int argc,char *argv[]){
 	  default: Rprintf("Unknown parameter");
 	}
     }
-	char *genofile = "geno.dat";
-	char *phenofile = "pheno.dat";
-	char *mposfile = "markerpos.txt";
-	char *chrfile = "chrid.dat";
-	char *setfile = "settings.dat";
+	const char *genofile = "geno.dat";
+	const char *phenofile = "pheno.dat";
+	const char *mposfile = "markerpos.txt";
+	const char *chrfile = "chrid.dat";
+	const char *setfile = "settings.dat";
     double **QTL;  
 	ivector f1genotype;
 	ivector chr;

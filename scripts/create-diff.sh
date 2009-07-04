@@ -8,8 +8,8 @@ if [ ! -d .git ]; then
   exit 1
 fi
 
-cd src
 git checkout standalone
+cd src
 ls ­-color=never *.cpp *.h > standalone.lst
 git checkout master
 cat standalone.lst | grep -v main | xargs git diff standalone > standalone.patch

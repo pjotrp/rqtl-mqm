@@ -40,7 +40,7 @@ extern "C"
 #include "MQMdata.h"
 #include "MQMsupport.h"
 #include "MQMinterfaces.h"   /*Testing */
-#include "MQMreDefine.h"
+#include "standalone.h"
 
 #include "util.h"
 

@@ -33,11 +33,10 @@ extern "C"
 #include <R_ext/PrtUtil.h>
 #include <R_ext/RS.h> /* for Calloc, Realloc */
 #include <R_ext/Utils.h>
+#include "standalone.h"
 #include "MQMscan.h"
 #include "MQMdata.h"
 #include "MQMprob.h"
-#include "MQMreDefine.h"
-
 #include "util.h"
 
 
@@ -117,7 +116,8 @@ extern "C"
 	double **NEWPheno;
 	int **NEWIND;
 	int prior = *Nind;
-	if(*verbose) Rprintf("INFO: Starting C-part of the dataaugmentation routine\n");
+
+	if(*verbose) Rprintf("INFO: Starting C-part of the data augmentation routine\n");
 	ivector new_ind;
     vector new_y,r,mapdistance;
 	cvector position;
@@ -258,8 +258,9 @@ extern "C"
 
 	int jj;
     int newNind=(*Nind);
-    (*Naug)= maxNaug; /* maximum size of augmented dataset */
-	cmatrix newmarker;
+    (*Naug)= maxNaug;     // sets and returns the maximum size of augmented dataset
+    // new variables sized to maxNaug:
+	cmatrix newmarker;    
     vector newy;
     cvector imarker;
     ivector newind;
@@ -516,7 +517,7 @@ extern "C"
 
                    if (iaug+3>maxNaug)
                    {       
-                    Rprintf("ERROR: Dataset too large after augmentation - your CROSS data may have been corrupted\n");
+                    Rprintf("ERROR: Dataset too large after augmentation - your CROSS data may have been corrupted\n");  // FIXME!
                     if(verbose) Rprintf("INFO: Recall procedure with larger value for augmentation parameters or lower the parameter neglect\n");
 					// Better not free them, we don't know if the arrays already contain something, perhaps not... then we would segfault in R
 					//Free(newy);

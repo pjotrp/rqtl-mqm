@@ -38,3 +38,5 @@ Makefile
 cmake_install.cmake
 src/sMQM
 CTestTestfile.cmake
+src/standalone.lst
+src/standalone.patch

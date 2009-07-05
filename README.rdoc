@@ -1,5 +1,13 @@
 = MQM standalone branch
-Contains sMQM (standalone MQM) and mpiMQM a wrapper to use mpi to execute multiple instances of sMQM
+
+Contains sMQM (standalone MQM) and mpiMQM a wrapper to use mpi to execute
+multiple instances of sMQM. It should compile for GNU C++ and Visual C++ and
+requires Rlib.
+
+The standalone version of MQM is used for profiling and regression testing. The
+input files should be correct (there is no correctness testing).
+
+FIXME: test augmentation?
 
 ==Compilation
 

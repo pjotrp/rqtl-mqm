@@ -266,6 +266,11 @@ extern "C" {
 
     Rprintf("Starting phenotype: %d\n",phenotype);
     analyseF2(nInd, nMark, &cofactor, markers, pheno_value[phenotype], f1genotype, backwards,QTL, &mapdistance,&chr,0,0,windowsize,stepsize,stepmin,stepmax,alpha,maxIter,nInd,&INDlist,estmap,'F',0,verbose);
+
+    // Output marker info
+    for (int m=0; m<nMark; m++) {
+      Rprintf("%5d%3d%9.3f\n",m,chr[m],mapdistance[m]);
+    }
     return 0;
   }
 

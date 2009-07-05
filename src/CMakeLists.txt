@@ -10,6 +10,9 @@ FIND_PACKAGE(RLibs)
 
 include_directories (.)
 add_definitions(-DSTANDALONE)
+add_definitions(-pg)
+
+set(LINK_FLAGS "-pg")
 
 link_libraries(${R_LIBRARY})
 

@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 2.6)
 
-set(CMAKE_MODULE_PATH "../cmake-modules/")
+IF (NOT CMAKE_MODULE_PATH)
+  set(CMAKE_MODULE_PATH "../cmake-modules/")
+ENDIF()
+
 ENABLE_TESTING()
 
 FIND_PACKAGE(RLibs)
@@ -19,4 +22,5 @@ MQMmapQTL.cpp      MQMprob.h       MQMscan.h
 util.h util.c      MQMmain.cpp
 )
 
+ADD_TEST(TestStandaloneMQM ../scripts/regression_tests.sh)
 

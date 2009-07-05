@@ -17,12 +17,29 @@ set(LINK_FLAGS "-pg")
 link_libraries(${R_LIBRARY})
 
 add_executable (sMQM 
-MQMdata.cpp        MQMmapQTL.h     standalone.h       MQMsupport.cpp
-MQMdata.h          MQMmixture.cpp  MQMregression.cpp  MQMsupport.h
-MQMinterfaces.cpp  MQMmixture.h    MQMregression.h    
-MQMinterfaces.h    MQMprob.cpp     MQMscan.cpp        
-MQMmapQTL.cpp      MQMprob.h       MQMscan.h
-util.h util.c      MQMmain.cpp
+MQM.h
+MQMaugment.cpp
+MQMaugment.h
+MQMdatatypes.cpp
+MQMdatatypes.h
+MQMeliminate.cpp
+MQMeliminate.h
+MQMextra.cpp
+MQMextra.h
+MQMmain.cpp
+MQMmapqtl.cpp
+MQMmapqtl.h
+MQMmixture.cpp
+MQMmixture.h
+MQMprob.cpp
+MQMprob.h
+MQMregression.cpp
+MQMregression.h
+MQMscan.cpp
+MQMscan.h
+standalone.h
+util.h
+util.c
 )
 
 ADD_TEST(TestStandaloneMQM ../scripts/regression_tests.sh)

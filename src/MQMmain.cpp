@@ -29,6 +29,7 @@
 using namespace std;
 
 extern "C" {
+
 #include <R.h>
 #include <Rdefines.h>
 #include <R_ext/PrtUtil.h>
@@ -265,9 +266,10 @@ extern "C" {
 
     Rprintf("Starting phenotype: %d\n",phenotype);
     analyseF2(nInd, nMark, &cofactor, markers, pheno_value[phenotype], f1genotype, backwards,QTL, &mapdistance,&chr,0,0,windowsize,stepsize,stepmin,stepmax,alpha,maxIter,nInd,&INDlist,estmap,'F',0,verbose);
-    return 1;
+    return 0;
   }
-}
+
+} // extern "C"
 
 #else
 #error "Is this a STANDALONE version? STANDALONE should be defined in the build system!"

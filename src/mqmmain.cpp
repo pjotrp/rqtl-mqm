@@ -28,7 +28,7 @@
 #include <iostream>
 
 
-#include "MQM.h"
+#include "mqm.h"
 
 using namespace std;
 

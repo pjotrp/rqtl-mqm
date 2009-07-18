@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
 
 IF (NOT CMAKE_MODULE_PATH)
-  set(CMAKE_MODULE_PATH "../cmake-modules/")
+  set(CMAKE_MODULE_PATH "../tools/cmake-support/modules")
 ENDIF()
 
 ENABLE_TESTING()
@@ -17,26 +17,11 @@ set(LINK_FLAGS "-pg")
 link_libraries(${R_LIBRARY})
 
 add_executable (sMQM 
-MQM.h
-MQMaugment.cpp
-MQMaugment.h
-MQMdatatypes.cpp
-MQMdatatypes.h
-MQMeliminate.cpp
-MQMeliminate.h
-MQMextra.cpp
-MQMextra.h
-MQMmain.cpp
-MQMmapqtl.cpp
-MQMmapqtl.h
-MQMmixture.cpp
-MQMmixture.h
-MQMprob.cpp
-MQMprob.h
-MQMregression.cpp
-MQMregression.h
-MQMscan.cpp
-MQMscan.h
+mqmaugment.cpp    mqmeliminate.h  mqmmapqtl.h     mqmregression.cpp
+mqmaugment.h      mqmextra.cpp    mqmmixture.cpp  mqmregression.h
+mqmdatatypes.cpp  mqmextra.h      mqmmixture.h    mqmscan.cpp
+mqmdatatypes.h    mqm.h           mqmprob.cpp     mqmscan.h
+mqmeliminate.cpp  mqmmapqtl.cpp   mqmprob.h       mqmmain.cpp
 standalone.h
 util.h
 util.c

@@ -1,7 +1,13 @@
 /**********************************************************************
+<<<<<<< HEAD:src/mqmmixture.h
  *
  * mqmmixture.h
  *
+=======
+ *
+ * MQMmixture.h
+ *
+>>>>>>> 63894764c0cdb672fb549d67b63d87068085aed5:src/MQMmixture.h
  * copyright (c) 2009 Ritsert Jansen, Danny Arends, Pjotr Prins and Karl W Broman
  *
  * last modified Apr, 2009

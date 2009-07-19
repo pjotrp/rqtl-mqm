@@ -266,8 +266,8 @@ int main(int argc,char *argv[]) {
   freevector((void *)f1genotype);
   freevector((void *)cofactor);
   freevector((void *)mapdistance);
-  freematrix((void **)markers);
-  freematrix((void **)pheno_value);
+  freematrix((void **)markers,nMark);
+  freematrix((void **)pheno_value,nPheno);
   freevector((void *)chr);
   freevector((void *)INDlist);
   freevector((void *)pos);

@@ -263,6 +263,14 @@ int main(int argc,char *argv[]) {
   for (int q=0; q<something; q++) {
     Rprintf("%5d%10.5f\n",q,QTL[0][q]);
   }
+  freevector((void *)f1genotype);
+  freevector((void *)cofactor);
+  freevector((void *)mapdistance);
+  freematrix((void **)markers);
+  freematrix((void **)pheno_value);
+  freevector((void *)chr);
+  freevector((void *)INDlist);
+  freevector((void *)pos);
   return 0;
 }
 

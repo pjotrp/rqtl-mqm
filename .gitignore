@@ -38,7 +38,6 @@ Makefile
 cmake_install.cmake
 src/sMQM
 CTestTestfile.cmake
-<<<<<<< HEAD:.gitignore
 *.pyc
 *.o
 *.so
@@ -59,7 +58,5 @@ MQMmain.cpp
 src/standalone.lst
 src/standalone.patch
 src/sMQM
-=======
-src/standalone.lst
-src/standalone.patch
->>>>>>> 63894764c0cdb672fb549d67b63d87068085aed5:.gitignore
+test/junk*
+tests/junk*

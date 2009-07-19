@@ -235,8 +235,8 @@ int main(int argc,char *argv[]) {
   if (verbose) {
     Rprintf("Chromosomes done %d -> # %d Chromosomes\n",cnt,max_chr);
   }
-  int something = 2*max_chr*(((stepmax)-(stepmin))/ (stepsize));
-  QTL = newmatrix(something,1);
+  int something = 3*max_chr*(((stepmax)-(stepmin))/ (stepsize));
+  QTL = newmatrix(1,something);
 
   for (int i=0; i< nMark; i++) {
     cofactor[i] = '0';

@@ -271,6 +271,7 @@ int main(int argc,char *argv[]) {
   freevector((void *)chr);
   freevector((void *)INDlist);
   freevector((void *)pos);
+  freematrix((void **)QTL,1);
   return 0;
 }
 

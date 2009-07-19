@@ -4,6 +4,7 @@ IF (NOT CMAKE_MODULE_PATH)
   set(CMAKE_MODULE_PATH "../tools/cmake-support/modules")
 ENDIF()
 
+SET(CMAKE_BUILD_TYPE Debug)
 ENABLE_TESTING()
 
 FIND_PACKAGE(RLibs)
@@ -16,7 +17,7 @@ set(LINK_FLAGS "-pg")
 
 link_libraries(${R_LIBRARY})
 
-add_executable (sMQM 
+add_executable (mqm 
 mqmaugment.cpp    mqmeliminate.h  mqmmapqtl.h     mqmregression.cpp
 mqmaugment.h      mqmextra.cpp    mqmmixture.cpp  mqmregression.h
 mqmdatatypes.cpp  mqmextra.h      mqmmixture.h    mqmscan.cpp

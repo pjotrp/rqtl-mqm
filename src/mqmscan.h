@@ -44,9 +44,9 @@ void analyseF2(int Nind, int Nmark, cvector *cofactor, cmatrix marker,
 
 void R_mqmscan(int *Nind,int *Nmark,int *Npheno,
                int *geno,int *chromo, double *dist, double *pheno,
-               int *cofactors, int *backwards, int *RMLorML,double *alfa,int *e
+               int *cofactors, int *backwards, int *RMLorML,double *alfa,int *emiter,
                double *windowsize,double *steps,
-               double *stepmi,double *stepma, int *nRun,int *out_Naug,int *indl
+               double *stepmi,double *stepma, int *nRun,int *out_Naug,int *indlist,  double *qtl,int *reestimate,int *crosstype,int *domi,int *verbose);
 
 #ifdef __cplusplus
   }
